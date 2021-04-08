@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ordesignerObjectsDiagram dslVersion="1.0.0.0" absoluteBounds="0, 0, 11, 8.5" name="CryptoLinq">
+  <DataContextMoniker Name="/CryptoLinqDataContext" />
+  <nestedChildShapes>
+    <classShape Id="d294019d-2b95-40bf-825b-542952456936" absoluteBounds="4.75, 1.25, 2, 1.5785953776041666">
+      <DataClassMoniker Name="/CryptoLinqDataContext/User" />
+      <nestedChildShapes>
+        <elementListCompartment Id="26a4168f-e3f6-42ec-afaa-758be9bf59a5" absoluteBounds="4.765, 1.71, 1.9700000000000002, 1.0185953776041665" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+  </nestedChildShapes>
+</ordesignerObjectsDiagram>
