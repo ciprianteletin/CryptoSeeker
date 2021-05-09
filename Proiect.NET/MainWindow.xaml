@@ -5,9 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Proiect.NET"
         mc:Ignorable="d"
-       Title="MainWindow" Height="707" Width="446"
+       Title="MainWindow" Height="707" Width="1274.697"
         WindowStyle="None"
-        ResizeMode="NoResize" WindowStartupLocation="CenterScreen">
+        ResizeMode="NoResize" WindowStartupLocation="CenterScreen" AllowsTransparency="True" Background="Transparent">
     <Grid>
         <Frame x:Name="Main"  NavigationUIVisibility="Hidden"/>
     </Grid>

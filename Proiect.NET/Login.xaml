@@ -5,7 +5,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:Proiect.NET"
       mc:Ignorable="d" 
-      d:DesignHeight="700" d:DesignWidth="456"
+      Height="700" Width="456"
       Title="Login">
     <Page.Background>
         <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">

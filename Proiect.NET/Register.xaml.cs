@@ -178,6 +178,7 @@ namespace Proiect.NET
             cryptoLinq.Users.InsertOnSubmit(newUser);
 
             cryptoLinq.SubmitChanges();
+            this.NavigationService.Navigate(new Uri("Login.xaml", UriKind.Relative));
         }
 
         private void RegisterBtn_Click(object sender, RoutedEventArgs e)

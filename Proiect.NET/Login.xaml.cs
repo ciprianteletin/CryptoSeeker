@@ -84,7 +84,8 @@ namespace Proiect.NET
                 ValidationLabel.Content = "Authentication failed!";
                 return;
             }
-            MessageBox.Show("Yay, logged in!");
+            MainMenu mainMenu = new MainMenu(username);
+            this.NavigationService.Navigate(mainMenu);
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System.Windows;
-using System.Configuration;
 
 namespace Proiect.NET
 {

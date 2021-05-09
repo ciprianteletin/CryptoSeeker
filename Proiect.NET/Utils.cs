@@ -11,5 +11,14 @@ namespace Proiect.NET
             data = new System.Security.Cryptography.SHA256Managed().ComputeHash(data);
             return Encoding.ASCII.GetString(data);
         }
+
+        public static string formatTimer(int data)
+        {
+            if(data <= 9)
+            {
+                return "0" + data;
+            }
+            return data + "";
+        }
     }
 }
