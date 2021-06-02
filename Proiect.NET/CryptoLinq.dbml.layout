@@ -8,5 +8,18 @@
         <elementListCompartment Id="26a4168f-e3f6-42ec-afaa-758be9bf59a5" absoluteBounds="4.765, 1.71, 1.9700000000000002, 1.0185953776041665" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
       </nestedChildShapes>
     </classShape>
+    <classShape Id="f6340120-67aa-4233-b956-4b134ec08263" absoluteBounds="7.75, 3.25, 2, 1.7708968098958331">
+      <DataClassMoniker Name="/CryptoLinqDataContext/history" />
+      <nestedChildShapes>
+        <elementListCompartment Id="adfb8bb5-7e5a-4ddb-985d-0c3778196300" absoluteBounds="7.7650000000000006, 3.71, 1.9700000000000002, 1.2108968098958333" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <associationConnector edgePoints="[(6.75 : 2.03929768880208); (8.75 : 2.03929768880208); (8.75 : 3.25)]" fixedFrom="Algorithm" fixedTo="Algorithm">
+      <AssociationMoniker Name="/CryptoLinqDataContext/User/User_history" />
+      <nodes>
+        <classShapeMoniker Id="d294019d-2b95-40bf-825b-542952456936" />
+        <classShapeMoniker Id="f6340120-67aa-4233-b956-4b134ec08263" />
+      </nodes>
+    </associationConnector>
   </nestedChildShapes>
 </ordesignerObjectsDiagram>

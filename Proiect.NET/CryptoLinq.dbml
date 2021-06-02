@@ -1,10 +1,22 @@
 ﻿<?xml version="1.0" encoding="utf-8"?><Database Name="CryptoDB" Class="CryptoLinqDataContext" xmlns="http://schemas.microsoft.com/linqtosql/dbml/2007">
+  <Connection Mode="AppSettings" ConnectionString="Data Source=DESKTOP-SHIJ6MT\CRYPTO;Initial Catalog=CryptoDB;Persist Security Info=True;User ID=sa" SettingsObjectName="Proiect.NET.Properties.Settings" SettingsPropertyName="CryptoDBConnectionString" Provider="System.Data.SqlClient" />
   <Table Name="dbo.users" Member="Users">
     <Type Name="User">
       <Column Name="Id" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
       <Column Name="username" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
       <Column Name="email" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
       <Column Name="password" Type="System.String" DbType="NVarChar(MAX) NOT NULL" CanBeNull="false" />
+      <Association Name="User_history" Member="histories" ThisKey="Id" OtherKey="user_id" Type="history" />
+    </Type>
+  </Table>
+  <Table Name="dbo.history" Member="histories">
+    <Type Name="history">
+      <Column Name="id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="currency_name" Type="System.String" DbType="NVarChar(30) NOT NULL" CanBeNull="false" />
+      <Column Name="price" Type="System.Decimal" DbType="Decimal(10,2) NOT NULL" CanBeNull="false" />
+      <Column Name="search_date" Type="System.DateTime" DbType="Date NOT NULL" CanBeNull="false" />
+      <Column Name="user_id" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Association Name="User_history" Member="User" ThisKey="user_id" OtherKey="Id" Type="User" IsForeignKey="true" DeleteRule="CASCADE" />
     </Type>
   </Table>
 </Database>

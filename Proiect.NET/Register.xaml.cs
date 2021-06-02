@@ -178,6 +178,7 @@ namespace Proiect.NET
             cryptoLinq.Users.InsertOnSubmit(newUser);
 
             cryptoLinq.SubmitChanges();
+            EmailSender.SendEmail(newUser.email, newUser.username);
             this.NavigationService.Navigate(new Uri("Login.xaml", UriKind.Relative));
         }
 

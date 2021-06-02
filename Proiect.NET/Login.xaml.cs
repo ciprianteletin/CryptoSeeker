@@ -23,7 +23,7 @@ namespace Proiect.NET
 
         private void Close_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            System.Windows.Application.Current.Shutdown();
+            Application.Current.Shutdown();
         }
 
         private void LoginRedirect_PreviewMouseDown(object sender, MouseButtonEventArgs e)

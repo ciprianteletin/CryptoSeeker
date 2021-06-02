@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -16,14 +17,23 @@ namespace Proiect.NET
     public partial class MainMenu : Page
     {
         private String Username;
+        private String SelectedCoin; //used for pdf
+        private decimal currentPrice; //used for history
         private Thread TimerThread;
-        private CryptoLinqDataContext cryptoLinq;
+        private CryptoLinqDataContext CryptoLinq;
+        private CoinMarket Api;
 
         public MainMenu()
         {
             InitializeComponent();
-            cryptoLinq = new CryptoLinqDataContext(Constants.connString);
+            CryptoLinq = new CryptoLinqDataContext(Constants.connString);
             HideFields();
+            HideGrids();
+            this.CryptoGrid.Visibility = GetVisibleProperty(true);
+            var plt = CryptoChart.plt;
+            double[] dataX = new double[] { 1, 2, 3, 4, 5 };
+            double[] dataY = new double[] { 1, 4, 9, 16, 25 };
+            plt.PlotScatter(dataX, dataY);
             this.Timer.Content = "00:00:00";
             InitThread();
         }
@@ -32,6 +42,10 @@ namespace Proiect.NET
         {
             this.Username = username;
             this.UsernameLabel.Content = username;
+            InitComboBox();
+            InitHistory();
+            this.Api = new CoinMarket();
+            UpdateChart();
         }
 
         private void Password_GotFocus(object sender, RoutedEventArgs e)
@@ -146,7 +160,7 @@ namespace Proiect.NET
         private void Close_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             CloseThread();
-            System.Windows.Application.Current.Shutdown();
+            Application.Current.Shutdown();
         }
 
         private void CloseThread()
@@ -167,10 +181,10 @@ namespace Proiect.NET
             {
                 return;
             }
-            User userByUsername = cryptoLinq.Users.FirstOrDefault(u => u.username.Equals(Username));
+            User userByUsername = CryptoLinq.Users.FirstOrDefault(u => u.username.Equals(Username));
             string encryptedPassword = Utils.EncryptPassword(Password.Password);
             userByUsername.password = encryptedPassword;
-            this.cryptoLinq.SubmitChanges();
+            this.CryptoLinq.SubmitChanges();
             this.ErrorLabel.Content = "Password changed with success!";
         }
 
@@ -203,9 +217,16 @@ namespace Proiect.NET
             this.DisplayDeleteAccount(false);
         }
 
+        private void HideGrids()
+        {
+            Visibility prop = Visibility.Hidden;
+            this.SettingsGrid.Visibility = prop;
+            this.HistoryGrid.Visibility = prop;
+        }
+
         private void DisplayUpdatePassword(bool value)
         {
-            System.Windows.Visibility prop = GetVisibleProperty(value);
+            Visibility prop = GetVisibleProperty(value);
 
             this.Password.IsEnabled = value;
             this.Password.Visibility = prop;
@@ -222,7 +243,7 @@ namespace Proiect.NET
 
         private void DisplayDeleteHistory(bool value)
         {
-            System.Windows.Visibility prop = GetVisibleProperty(value);
+            Visibility prop = GetVisibleProperty(value);
 
             this.DeleteHistoryLabel.Visibility = prop;
             this.DeleteHistoryBtn.IsEnabled = value;
@@ -232,7 +253,7 @@ namespace Proiect.NET
 
         private void DisplayDeleteAccount(bool value)
         {
-            System.Windows.Visibility prop = GetVisibleProperty(value);
+            Visibility prop = GetVisibleProperty(value);
 
             this.DeleteAccountLabel.Visibility = prop;
             this.UsernameDeleteAccount.Visibility = prop;
@@ -240,14 +261,14 @@ namespace Proiect.NET
             this.DeleteAccountBtn.IsEnabled = value;
         }
 
-        public static System.Windows.Visibility GetVisibleProperty(bool value)
+        public static Visibility GetVisibleProperty(bool value)
         {
             if (value)
             {
-                return System.Windows.Visibility.Visible;
+                return Visibility.Visible;
             }
 
-            return System.Windows.Visibility.Hidden;
+            return Visibility.Hidden;
         }
 
         private void ChangePassword_Click(object sender, RoutedEventArgs e)
@@ -263,6 +284,11 @@ namespace Proiect.NET
             {
                 return;
             }
+            User userByUsername = CryptoLinq.Users.First(u => u.username.Equals(Username));
+            CryptoLinq.ExecuteCommand("DELETE FROM dbo.history where user_Id = {0}", userByUsername.Id);
+            CryptoLinq.SubmitChanges();
+            DeleteHistoryLabel.Content = "History deleted with success!";
+            this.HistoryGrid.Items.Clear();
         }
 
         private void DeleteHistory_Click(object sender, RoutedEventArgs e)
@@ -276,7 +302,8 @@ namespace Proiect.NET
         {
             this.DisplayDeleteAccount(true);
             this.DisplayDeleteHistory(false);
-            this.DisplayUpdatePassword(false);        }
+            this.DisplayUpdatePassword(false);        
+        }
 
         private void DeleteAccountBtn_Click(object sender, RoutedEventArgs e)
         {
@@ -284,10 +311,125 @@ namespace Proiect.NET
             {
                 return;
             }
-            User userByUsername = cryptoLinq.Users.FirstOrDefault(u => u.username.Equals(Username));
-            this.cryptoLinq.Users.DeleteOnSubmit(userByUsername);
-            this.cryptoLinq.SubmitChanges();
+            User userByUsername = CryptoLinq.Users.First(u => u.username.Equals(Username));
+            this.CryptoLinq.Users.DeleteOnSubmit(userByUsername);
+            this.CryptoLinq.SubmitChanges();
+            this.TimerThread.Abort();
             this.NavigationService.Navigate(new Uri("Login.xaml", UriKind.Relative));
+        }
+
+        private void SettingsButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.HideFields();
+            this.SettingsGrid.Visibility = GetVisibleProperty(true);
+            this.CryptoGrid.Visibility = GetVisibleProperty(false);
+            this.HistoryGrid.Visibility = GetVisibleProperty(false);
+        }
+
+        private void InitComboBox()
+        {
+            foreach(var combo in CoinMarket.coins)
+            {
+                this.ComboCrypto.Items.Add(combo);
+            }
+        }
+
+        private void UpdateChart()
+        {
+            var plt = CryptoChart.plt;
+            plt.Clear();
+            Api.UpdateData();
+            dynamic[] coins = Api.GetMyCoins();
+            SelectedCoin = this.ComboCrypto.Text;
+
+            dynamic coin = coins[0]["name"];
+            for (int j = 0; j < coins.Length; j++)
+            {
+                string name = coins[j]["name"];
+
+                if (String.Equals(name, SelectedCoin))
+                {
+                    coin = coins[j];
+                }
+            }
+            string[] labels = { "90 days", "30 days", "7 days", "24 h", "1h", "current" };
+
+            double currentPrice = coin["quote"]["USD"]["price"];
+            this.currentPrice = (decimal)currentPrice;
+            double price1H = coin["quote"]["USD"]["percent_change_1h"];
+            price1H = Math.Abs((currentPrice * (100 - price1H)) / 100);
+            double price24H = coin["quote"]["USD"]["percent_change_24h"];
+            price24H = Math.Abs((currentPrice * (100 - price24H)) / 100);
+            double price7D = coin["quote"]["USD"]["percent_change_7d"];
+            price7D = Math.Abs((currentPrice * (100 - price7D)) / 100);
+            double price30D = coin["quote"]["USD"]["percent_change_30d"];
+            price30D = Math.Abs((currentPrice * (100 - price30D)) / 100);
+            double price90D = coin["quote"]["USD"]["percent_change_90d"];
+            price90D = Math.Abs((currentPrice * (100 - price90D)) / 100);
+
+            double[] dataX = new double[] { 0, 1, 2, 3, 4, 5 };
+            double[] dataY = new double[] { price90D, price30D, price7D, price24H, price1H, currentPrice };
+            plt.PlotScatter(dataX, dataY);
+            plt.AxisAuto();
+            plt.XTicks(labels);
+            plt.Style(ScottPlot.Style.Blue2);
+            CryptoChart.Render();
+        }
+
+        private void SearchButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.UpdateChart();
+            AddHistory();
+        }
+
+        private void AddHistory()
+        {
+            history crtHistory = new history();
+            DateTime crtDate = DateTime.Now;
+            crtHistory.currency_name = this.SelectedCoin;
+            crtHistory.price = this.currentPrice;
+            crtHistory.search_date = crtDate;
+            User userByUsername = CryptoLinq.Users.First(u => u.username.Equals(Username));
+            crtHistory.user_id = userByUsername.Id;
+
+            CryptoLinq.histories.InsertOnSubmit(crtHistory);
+            CryptoLinq.SubmitChanges();
+
+            this.HistoryGrid.Items.Add(crtHistory);
+        }
+
+        private void CryptoBtn_Click(object sender, RoutedEventArgs e)
+        {
+            this.SettingsGrid.Visibility = GetVisibleProperty(false);
+            this.HistoryGrid.Visibility = GetVisibleProperty(false);
+            this.CryptoGrid.Visibility = GetVisibleProperty(true);
+        }
+
+        private void PdfBtn_Click(object sender, RoutedEventArgs e)
+        {
+            var plt = CryptoChart.plt;
+            plt.SaveFig("Crypto_Fig.png"); // we have the figure for the pdf
+            PDFGenerator.CreateDocument(SelectedCoin, Api.GetMyCoins());
+        }
+
+        private void HistoryBtn_Click(object sender, RoutedEventArgs e)
+        {
+            this.SettingsGrid.Visibility = GetVisibleProperty(false);
+            this.CryptoGrid.Visibility = GetVisibleProperty(false);
+            this.HistoryGrid.Visibility = GetVisibleProperty(true);
+        }
+
+        private void InitHistory()
+        {
+            User userByUsername = CryptoLinq.Users.First(u => u.username.Equals(Username));
+            this.HistoryGrid.HeadersVisibility = DataGridHeadersVisibility.Column;
+            IEnumerable<history> histories = from hst in CryptoLinq.histories
+                           where hst.user_id == userByUsername.Id
+                           select hst;
+            foreach(history hst in histories)
+            {
+                this.HistoryGrid.Items.Add(hst);
+            }
         }
     }
 }
